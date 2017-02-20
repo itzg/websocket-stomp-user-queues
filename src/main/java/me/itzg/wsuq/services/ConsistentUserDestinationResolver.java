@@ -14,6 +14,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * This resolver bridges these scenarios:
+ * <ul>
+ *     <li>JS client subscribing with <code>/user/.../[topic]</code></li>
+ *     <li>Internal web app usage of {@link org.springframework.messaging.simp.SimpMessagingTemplate}</li>
+ *     <li>Externally sent messages towards the broker at <code>/.../users.[user].[topic]</code></li>
+ * </ul>
+ *
  * @author Geoff Bourne
  * @since Feb 2017
  */
@@ -25,7 +32,7 @@ public class ConsistentUserDestinationResolver implements UserDestinationResolve
             Pattern.compile("/user/(?<name>.+?)/(?<routing>.+)/(?<dest>.+?)");
 
     private static final Pattern USER_AUTHENTICATED_PATTERN =
-            Pattern.compile("/user/(?<routing>.*)/(?<dest>.*?)");
+            Pattern.compile("/user/(?<routing>.*)/(?<dest>.+?)");
 
     @Override
     public UserDestinationResult resolveDestination(Message<?> message) {
