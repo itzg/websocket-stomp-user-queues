@@ -18,6 +18,10 @@ angular.module('MyApp', [
                         $scope.currentTime = payload.value;
                     });
                 })
+
+                var sub2 = $stomp.subscribe('/topic/announce', function(payload, headers, res){
+                    $log.debug("received /topic/announce", payload, headers, res);
+                })
             })
 
     })

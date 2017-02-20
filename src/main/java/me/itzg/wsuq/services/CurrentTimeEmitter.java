@@ -30,7 +30,9 @@ public class CurrentTimeEmitter implements ApplicationListener<BrokerAvailabilit
             CurrentTime currentTime = new CurrentTime();
             currentTime.setValue(new Date());
 
-            messagingTemplate.convertAndSendToUser("user", "/exchange/amq.direct/current-time", currentTime);
+            messagingTemplate.convertAndSendToUser("me", "/exchange/amq.direct/current-time", currentTime);
+
+            messagingTemplate.convertAndSend("/topic/announce", currentTime);
         }
         else {
             LOGGER.warn("Broker is not yet available");
