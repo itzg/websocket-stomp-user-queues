@@ -1,6 +1,7 @@
 package me.itzg.wsuq.services;
 
 import me.itzg.wsuq.model.CurrentTime;
+import me.itzg.wsuq.model.MemoryInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,9 @@ public class CurrentTimeEmitter implements ApplicationListener<BrokerAvailabilit
 
             messagingTemplate.convertAndSendToUser("me", "/exchange/amq.direct/current-time", currentTime);
 
-            messagingTemplate.convertAndSend("/topic/announce", currentTime);
+            // Also wanted to exercise a non-user specific topic message. Using free memory just to provide a steadily
+            // changing value.
+            messagingTemplate.convertAndSend("/topic/memory", new MemoryInfo(Runtime.getRuntime().freeMemory()));
         }
         else {
             LOGGER.warn("Broker is not yet available");

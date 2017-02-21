@@ -18,6 +18,12 @@ easily done using:
 docker run -d --name rabbitmq -p 61613:61613 -p 5672:5672 -p 15672:15672 itzg/rabbitmq-stomp
 ```
 
+or
+
+```
+docker-compose up
+```
+
 If your RabbitMQ instance/container is running on another host (virtual or external), pass `--spring.rabbitmq.host=HOST`
 to override the default value of "localhost".
 

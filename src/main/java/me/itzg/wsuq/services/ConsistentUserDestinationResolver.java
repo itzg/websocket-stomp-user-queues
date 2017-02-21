@@ -40,11 +40,25 @@ public class ConsistentUserDestinationResolver implements UserDestinationResolve
 
         final String destination = accessor.getDestination();
         final String authUser = accessor.getUser() != null ? accessor.getUser().getName() : null;
-        LOGGER.debug("Resolving user destination {} for authUser={}, messageType={}",
+        LOGGER.trace("Resolving user destination {} for authUser={}, messageType={}",
                 destination, authUser, accessor.getMessageType());
 
         if (destination != null) {
-            if (accessor.getMessageType().equals(SimpMessageType.MESSAGE)) {
+            if (SimpMessageType.SUBSCRIBE.equals(accessor.getMessageType()) ||
+                    SimpMessageType.UNSUBSCRIBE.equals(accessor.getMessageType())) {
+                if (authUser != null) {
+                    final Matcher authMatcher = USER_AUTHENTICATED_PATTERN.matcher(destination);
+                    if (authMatcher.matches()) {
+                        String result = String.format("/%s/users.%s.%s",
+                                authMatcher.group("routing"), authUser, authMatcher.group("dest"));
+                        UserDestinationResult userDestinationResult =
+                                new UserDestinationResult(destination, Collections.singleton(result), result, authUser);
+                        LOGGER.debug("Resolved {} for {} into {}", destination, authUser, userDestinationResult);
+                        return userDestinationResult;
+                    }
+                }
+            }
+            else if (accessor.getMessageType().equals(SimpMessageType.MESSAGE)) {
                 final Matcher prefixMatcher = USER_DEST_PREFIXING_PATTERN.matcher(destination);
                 if (prefixMatcher.matches()) {
                     String user = prefixMatcher.group("name");
@@ -52,24 +66,14 @@ public class ConsistentUserDestinationResolver implements UserDestinationResolve
                             prefixMatcher.group("routing"), user, prefixMatcher.group("dest"));
                     UserDestinationResult userDestinationResult =
                             new UserDestinationResult(destination, Collections.singleton(result), result, user);
-                    LOGGER.debug("Resolved into {}", userDestinationResult);
+                    LOGGER.debug("Resolved {} into {}", destination, userDestinationResult);
                     return userDestinationResult;
                 }
             }
 
-            if (authUser != null) {
-                final Matcher authMatcher = USER_AUTHENTICATED_PATTERN.matcher(destination);
-                if (authMatcher.matches()) {
-                    String result = String.format("/%s/users.%s.%s",
-                            authMatcher.group("routing"), authUser, authMatcher.group("dest"));
-                    UserDestinationResult userDestinationResult =
-                            new UserDestinationResult(destination, Collections.singleton(result), result, authUser);
-                    LOGGER.debug("Resolved into {}", userDestinationResult);
-                    return userDestinationResult;
-                }
-            }
         }
 
+        LOGGER.trace("Destination {} is not user-based", destination);
         return null;
     }
 }

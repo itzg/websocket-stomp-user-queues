@@ -4,6 +4,7 @@ angular.module('MyApp', [
     .controller('MyCtrl', function ($scope, $log, $stomp) {
 
         $scope.currentTime = null;
+        $scope.freeMemory = null;
 
         function cbConnectError(e) {
             $log.error('STOMP error', e);
@@ -19,8 +20,9 @@ angular.module('MyApp', [
                     });
                 })
 
-                var sub2 = $stomp.subscribe('/topic/announce', function(payload, headers, res){
-                    $log.debug("received /topic/announce", payload, headers, res);
+                var sub2 = $stomp.subscribe('/topic/memory', function(payload, headers, res){
+                    $log.debug("received /topic/memory", payload, headers, res);
+                    $scope.freeMemory = payload.free;
                 })
             })
 
